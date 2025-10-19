@@ -1,0 +1,29 @@
+# 🐍 Python cache and compiled files
+__pycache__/
+*.py[cod]
+*.so
+
+# 🧪 Test database
+db.sqlite3
+
+# 🧪 Test scripts
+backend/test.py
+backend/config/__pycache__/
+
+# 📦 Virtual environment
+venv/
+
+# ⚙️ VS Code settings
+.vscode/
+
+# 🔐 Environment variables
+.env
+
+# 📜 Migrations (optional — if you regenerate them often)
+backend/scrapper/migrations/
+backend/scrapper/__pycache__/
+
+# 📤 Logs and temp files
+*.log
+*.tmp
+

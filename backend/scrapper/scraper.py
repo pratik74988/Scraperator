@@ -54,7 +54,7 @@ class BeautifulSoupScraper:
                 data = {
                     'url':url,
                     'title':self.get_title(soup),
-                    'meta desciption': self.get_meta_desciption(soup),
+                    #'meta desciption': self.get_meta_desciption(soup),
                     'headings': self.get_headings(soup),
                     'links': self.get_links(soup, url),
                     'images': self.get_images(soup, url),

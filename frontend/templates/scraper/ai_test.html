@@ -1,0 +1,117 @@
+
+{% extends 'scraper/base.html' %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/ai_chat.css' %}">
+{% block title %}AI Assistant - Chat Interface{% endblock %}
+
+{% block extra_css %}
+
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <!-- Chat Header -->
+    <div class="chat-header">
+        <div class="header-content">
+            <div class="ai-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="header-text">
+                <h1>AI Assistant</h1>
+                <p class="status">Online • Ready to help</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-icon" onclick="clearChat()" title="Clear chat">
+                <i class="fas fa-trash"></i>
+            </button>
+            <button class="btn-icon" onclick="toggleHistory()" title="Show history">
+                <i class="fas fa-history"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Chat Messages Area -->
+    <div class="chat-messages" id="chatMessages">
+        <!-- Welcome Message -->
+        <div class="message ai-message">
+            <div class="message-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    <p>👋 Hello! I'm your AI web scraping assistant powered by Groq LLM.</p>
+                    <p>I can help you with:</p>
+                    <ul>
+                        <li>Scraping and extracting data from any URL</li>
+                        <li>Answering questions about website content</li>
+                        <li>Suggesting what data can be extracted</li>
+                        <li>Structuring unstructured web data</li>
+                    </ul>
+                    <p>Just send me a URL and your question or instructions! 🚀</p>
+                </div>
+                <div class="message-time">Just now</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <button class="quick-action-btn" onclick="insertExample('question')">
+            <i class="fas fa-question-circle"></i>
+            <span>Ask Question</span>
+        </button>
+        <button class="quick-action-btn" onclick="insertExample('extract')">
+            <i class="fas fa-database"></i>
+            <span>Extract Data</span>
+        </button>
+        <button class="quick-action-btn" onclick="insertExample('suggest')">
+            <i class="fas fa-lightbulb"></i>
+            <span>Get Suggestions</span>
+        </button>
+    </div>
+
+    <!-- Chat Input Area -->
+    <div class="chat-input-container">
+        <div class="input-wrapper">
+            <div class="url-input-group">
+                <i class="fas fa-link input-icon"></i>
+                <input 
+                    type="url" 
+                    id="chatUrl" 
+                    placeholder="Enter website URL (e.g., https://example.com)"
+                    class="chat-url-input"
+                >
+            </div>
+            <div class="message-input-group">
+                <textarea 
+                    id="chatMessage" 
+                    placeholder="Type your question or instructions..."
+                    class="chat-message-input"
+                    rows="1"
+                ></textarea>
+                <button class="send-button" onclick="sendMessage()" id="sendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- History Sidebar (Hidden by default) -->
+<div class="history-sidebar" id="historySidebar">
+    <div class="sidebar-header">
+        <h3>Chat History</h3>
+        <button class="btn-icon" onclick="toggleHistory()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="history-list" id="historyList">
+        <!-- History items will be dynamically added -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/ai_chat.js' %}"></script>
+{% endblock %}

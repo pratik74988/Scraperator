@@ -1,6 +1,3 @@
-from django.shortcuts import render
-
-# Create your views here.
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -8,6 +5,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from .models import ScrapeJob, ScrapedData, ScrapeLog
 from .scraper import AutoScraper, ScrapperException
+from .agent import AgentManager
 from rest_framework import serializers
 import logging
 
@@ -62,7 +60,7 @@ class ScrapeJobViewSet(viewsets.ModelViewSet):
         return ScrapeJobSerializer
     
     def create(self, request):
-        """Create a new scrape job"""
+        """Create a new scrape job with AI processing"""
         serializer = ScrapeJobCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -84,28 +82,54 @@ class ScrapeJobViewSet(viewsets.ModelViewSet):
             message=f'Job created for URL: {url}'
         )
         
-        # Execute scraping immediately (will move to Celery later)
+        # Execute scraping and AI processing
         try:
             job.mark_running()
             ScrapeLog.objects.create(
                 job=job,
                 level='info',
-                message=f'Starting scrape with {scraper_type} scraper'
+                message=f'Starting intelligent scrape with {scraper_type} scraper'
             )
             
-            # Scrape the URL
-            data = AutoScraper.scrape(url, scraper_type)
-            
-            # Count items
-            items_count = len(data.get('links', [])) + len(data.get('images', []))
-            
-            # Mark completed
-            job.mark_completed(data, items_count)
-            ScrapeLog.objects.create(
-                job=job,
-                level='info',
-                message=f'Scrape completed successfully. Items: {items_count}'
+            # Use AgentManager for scraping + AI processing
+            result = AgentManager.scrape_and_process(
+                url=url,
+                user_instructions=user_instructions,
+                scraper_type=scraper_type
             )
+            
+            if result['status'] == 'success':
+                # Prepare final data
+                final_data = {
+                    'raw_data': result['raw_data'],
+                    'ai_extracted': result.get('ai_processed_data')
+                }
+                
+                # Count items
+                items_count = len(result['raw_data'].get('links', [])) + len(result['raw_data'].get('images', []))
+                
+                # Mark completed
+                job.mark_completed(final_data, items_count)
+                
+                if result.get('ai_processed_data'):
+                    ScrapeLog.objects.create(
+                        job=job,
+                        level='info',
+                        message=f'AI processing completed. Extracted structured data based on instructions.'
+                    )
+                
+                ScrapeLog.objects.create(
+                    job=job,
+                    level='info',
+                    message=f'Scrape completed successfully. Items: {items_count}'
+                )
+            else:
+                job.mark_failed(result['error'])
+                ScrapeLog.objects.create(
+                    job=job,
+                    level='error',
+                    message=f'Scrape failed: {result["error"]}'
+                )
             
         except ScrapperException as e:
             job.mark_failed(str(e))
@@ -160,6 +184,82 @@ class ScrapeJobViewSet(viewsets.ModelViewSet):
             'running': running,
             'success_rate': round((completed / total_jobs * 100) if total_jobs > 0 else 0, 2)
         })
+    
+    @action(detail=False, methods=['post'])
+    def ask_question(self, request):
+        """Ask a question about a URL without creating a full job"""
+        url = request.data.get('url')
+        question = request.data.get('question')
+        scraper_type = request.data.get('scraper_type', 'auto')
+        
+        if not url or not question:
+            return Response(
+                {'error': 'Both url and question are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        result = AgentManager.answer_question_about_url(url, question, scraper_type)
+        return Response(result)
+    
+    @action(detail=False, methods=['post'])
+    def get_suggestions(self, request):
+        """Get AI suggestions for what can be extracted from a URL"""
+        url = request.data.get('url')
+        scraper_type = request.data.get('scraper_type', 'auto')
+        
+        if not url:
+            return Response(
+                {'error': 'URL is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        result = AgentManager.get_extraction_suggestions(url, scraper_type)
+        return Response(result)
+    
+    @action(detail=False, methods=['post'])
+    def ask_question(self, request):
+        """Ask a question about a URL without creating a full job"""
+        url = request.data.get('url')
+        question = request.data.get('question')
+        scraper_type = request.data.get('scraper_type', 'auto')
+        
+        if not url or not question:
+            return Response(
+                {'error': 'Both url and question are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        result = AgentManager.answer_question_about_url(url, question, scraper_type)
+        return Response(result)
+    
+    @action(detail=False, methods=['post'])
+    def get_suggestions(self, request):
+        """Get AI suggestions for what can be extracted from a URL"""
+        url = request.data.get('url')
+        scraper_type = request.data.get('scraper_type', 'auto')
+        
+        if not url:
+            return Response(
+                {'error': 'URL is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        result = AgentManager.get_extraction_suggestions(url, scraper_type)
+
+        # ✅ Fixed: proper single Response() with all fields
+        total_jobs = ScrapeJob.objects.count()
+        completed = ScrapeJob.objects.filter(status='completed').count()
+        failed = ScrapeJob.objects.filter(status='failed').count()
+        running = ScrapeJob.objects.filter(status='running').count()
+
+        return Response({
+            'result': result,
+            'total_jobs': total_jobs,
+            'completed': completed,
+            'failed': failed,
+            'running': running,
+            'success_rate': round((completed / total_jobs * 100) if total_jobs > 0 else 0, 2),
+        })
 
 
 # Template Views for Frontend
@@ -199,3 +299,8 @@ def job_detail_view(request, job_id):
 def create_job_view(request):
     """Create new scrape job view"""
     return render(request, 'scraper/create_job.html')
+
+
+def ai_test_view(request):
+    """AI testing interface"""
+    return render(request, 'scraper/ai_test.html')

@@ -1,0 +1,162 @@
+{% extends 'scraper/base.html' %}
+
+{% block title %}Dashboard - AI Web Scraper{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+    <p class="text-gray-600 mt-2">Monitor and manage your scraping jobs</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm font-medium">Total Jobs</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_jobs }}</p>
+            </div>
+            <div class="bg-blue-100 rounded-full p-3">
+                <i class="fas fa-tasks text-blue-600 text-2xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm font-medium">Completed</p>
+                <p class="text-3xl font-bold text-green-600 mt-2">{{ completed }}</p>
+            </div>
+            <div class="bg-green-100 rounded-full p-3">
+                <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm font-medium">Failed</p>
+                <p class="text-3xl font-bold text-red-600 mt-2">{{ failed }}</p>
+            </div>
+            <div class="bg-red-100 rounded-full p-3">
+                <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm font-medium">Success Rate</p>
+                <p class="text-3xl font-bold text-purple-600 mt-2">
+                    {% if total_jobs > 0 %}
+                        {{ completed|floatformat:0 }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </p>
+            </div>
+            <div class="bg-purple-100 rounded-full p-3">
+                <i class="fas fa-chart-line text-purple-600 text-2xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Jobs Table -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900">Recent Scraping Jobs</h2>
+    </div>
+
+    {% if jobs %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scraper</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for job in jobs %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ job.id }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                        <a href="{{ job.url }}" target="_blank" class="text-blue-600 hover:underline">
+                            {{ job.url|truncatechars:50 }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if job.status == 'completed' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            <i class="fas fa-check mr-1"></i> Completed
+                        </span>
+                        {% elif job.status == 'failed' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                            <i class="fas fa-times mr-1"></i> Failed
+                        </span>
+                        {% elif job.status == 'running' %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                            <i class="fas fa-spinner fa-spin mr-1"></i> Running
+                        </span>
+                        {% else %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                            Pending
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ job.scraper_type|title }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ job.total_items_scraped }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {% if job.execution_time %}
+                            {{ job.execution_time|floatformat:2 }}s
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ job.created_at|date:"M d, Y H:i" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <a href="{% url 'scrapper:job_detail' job.id %}" class="text-blue-600 hover:text-blue-900">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="px-6 py-12 text-center">
+        <i class="fas fa-inbox text-gray-400 text-5xl mb-4"></i>
+        <p class="text-gray-500 text-lg">No scraping jobs yet</p>
+        <a href="{% url 'scrapper:create_job' %}" class="inline-block mt-4 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">
+            Create Your First Job
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Auto Refresh -->
+<script>
+    // Auto refresh every 5 seconds if there are running jobs
+    const hasRunningJobs = {% if jobs %}{{ jobs|length }} > 0{% else %}false{% endif %};
+    if (hasRunningJobs) {
+        setTimeout(() => location.reload(), 5000);
+    }
+</script>
+{% endblock %}

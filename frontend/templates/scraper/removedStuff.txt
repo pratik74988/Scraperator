@@ -1,3 +1,7 @@
 <!---<a href="{% url 'scrapper:ai_test' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
                         <i class="fas fa-robot mr-1"></i> AI Assistant
                     </a> -->
+<span class="badge badge-{{ job.status }}">
+                            <i class="fas fa-{{ job.status|status_icon }}"></i>
+                            {{ job.status|title }}
+                        </span>

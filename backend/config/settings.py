@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_extensions',
+    #'django_extensions',
 
     
     # Third party apps
@@ -142,7 +142,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR.parent / 'frontend' / 'template' / 'scrapper' / 'static']
+STATICFILES_DIRS = [BASE_DIR.parent / 'frontend' / 'templates' / 'scraper' / 'static']
 
 # Media files
 MEDIA_URL = '/media/'
@@ -174,7 +174,7 @@ REST_FRAMEWORK = {
 
 # Groq API Configuration
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
-GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama-3.1-70b-versatile')
+GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama-3.1-8b-instant')
 
 if not GROQ_API_KEY and not DEBUG:
     raise ValueError("GROQ_API_KEY must be set in production")

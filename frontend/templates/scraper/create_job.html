@@ -1,185 +1,135 @@
 {% extends 'scraper/base.html' %}
+{% load static %}
 
 {% block title %}Create New Scrape Job{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/create_job.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="max-w-3xl mx-auto">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Create New Scrape Job</h1>
-        <p class="text-gray-600 mt-2">Enter a URL and let our AI scrape it for you</p>
+<div class="create-job-container">
+    <div class="page-header">
+        <h1 class="page-title">Create New Scrape Job</h1>
+        <p class="page-subtitle">Enter a URL and let our AI scrape it for you</p>
     </div>
 
     <!-- Form Card -->
-    <div class="bg-white rounded-lg shadow-lg p-8">
+    <div class="card form-card">
         <form id="scrapeForm">
             <!-- URL Input -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-link mr-2"></i>Website URL *
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-link"></i>
+                    Website URL *
                 </label>
-                <div class="flex gap-2">
+                <div class="url-input-wrapper">
                     <input 
                         type="url" 
                         id="url" 
-                        name="url" 
-                        required
+                        class="form-input"
                         placeholder="https://example.com"
-                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
                     >
-                    <button 
-                        type="button"
-                        onclick="getSuggestions()"
-                        class="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 flex items-center"
-                        title="Get AI suggestions for this URL"
-                    >
-                        <i class="fas fa-magic mr-2"></i>AI Suggest
+                    <button type="button" class="btn btn-ai-suggest" onclick="getSuggestions()">
+                        <i class="fas fa-magic"></i>
+                        AI Suggest
                     </button>
                 </div>
-                <p class="mt-2 text-sm text-gray-500">Enter the full URL including https://</p>
+                <p class="form-hint">Enter the full URL including https://</p>
             </div>
 
-            <!-- AI Suggestions Display -->
-            <div id="suggestionsBox" class="hidden mb-6 p-4 bg-purple-50 border-2 border-purple-200 rounded-lg">
-                <h4 class="font-semibold text-purple-900 mb-3">
-                    <i class="fas fa-lightbulb mr-2"></i>AI Suggestions for Extraction:
+            <!-- AI Suggestions Box -->
+            <div id="suggestionsBox" class="suggestions-box hidden">
+                <h4 class="suggestions-title">
+                    <i class="fas fa-lightbulb"></i>
+                    AI Suggestions for Extraction:
                 </h4>
-                <div id="suggestionsContent" class="space-y-2"></div>
+                <div id="suggestionsContent"></div>
             </div>
 
             <!-- Instructions Input -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-comment-alt mr-2"></i>Scraping Instructions (Optional)
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-comment-alt"></i>
+                    Scraping Instructions (Optional)
                 </label>
                 <textarea 
                     id="user_instructions" 
-                    name="user_instructions"
+                    class="form-textarea"
                     rows="4"
                     placeholder="E.g., Extract all product names and prices, Get all article titles and dates..."
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 ></textarea>
-                <p class="mt-2 text-sm text-gray-500">Describe what you want to extract (AI will use this later)</p>
+                <p class="form-hint">Describe what you want to extract (AI will use this later)</p>
             </div>
 
             <!-- Scraper Type -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-robot mr-2"></i>Scraper Type
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-robot"></i>
+                    Scraper Type
                 </label>
-                <select 
-                    id="scraper_type" 
-                    name="scraper_type"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
+                <select id="scraper_type" class="form-select">
                     <option value="auto">Auto Detect (Recommended)</option>
                     <option value="beautifulsoup">BeautifulSoup (Static Sites)</option>
                     <option value="selenium">Selenium (JavaScript Sites)</option>
                 </select>
-                <p class="mt-2 text-sm text-gray-500">Auto-detect will choose the best scraper automatically</p>
+                <p class="form-hint">Auto-detect will choose the best scraper automatically</p>
             </div>
 
             <!-- Submit Button -->
-            <div class="flex items-center justify-between">
-                <button 
-                    type="submit" 
-                    id="submitBtn"
-                    class="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-                >
-                    <i class="fas fa-play mr-2"></i>Start Scraping
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fas fa-play"></i>
+                    Start Scraping
                 </button>
-                <a href="{% url 'scrapper:dashboard' %}" class="text-gray-600 hover:text-gray-900">
-                    <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                <a href="{% url 'scrapper:dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
                 </a>
             </div>
         </form>
 
         <!-- Loading State -->
-        <div id="loadingState" class="hidden mt-8 p-6 bg-blue-50 rounded-lg">
-            <div class="flex items-center">
-                <i class="fas fa-spinner fa-spin text-blue-600 text-2xl mr-4"></i>
-                <div>
-                    <p class="text-blue-900 font-medium">Scraping in progress...</p>
-                    <p class="text-blue-700 text-sm mt-1">This may take a few seconds</p>
-                </div>
+        <div id="loadingState" class="loading-state hidden">
+            <div class="spinner"></div>
+            <div class="loading-text">
+                <p class="loading-title">Scraping in progress...</p>
+                <p class="loading-subtitle">This may take a few seconds</p>
             </div>
         </div>
 
         <!-- Error State -->
-        <div id="errorState" class="hidden mt-8 p-6 bg-red-50 rounded-lg">
-            <div class="flex items-center">
-                <i class="fas fa-exclamation-circle text-red-600 text-2xl mr-4"></i>
-                <div>
-                    <p class="text-red-900 font-medium">Error occurred</p>
-                    <p id="errorMessage" class="text-red-700 text-sm mt-1"></p>
-                </div>
+        <div id="errorState" class="error-state hidden">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+                <p class="error-title">Error occurred</p>
+                <p id="errorMessage" class="error-message"></p>
             </div>
         </div>
     </div>
 
     <!-- Info Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-        <div class="bg-blue-50 p-6 rounded-lg">
-            <i class="fas fa-magic text-blue-600 text-3xl mb-3"></i>
-            <h3 class="font-semibold text-gray-900 mb-2">AI-Powered</h3>
-            <p class="text-gray-600 text-sm">Uses LangChain and Groq LLM to intelligently extract data</p>
+    <div class="info-cards">
+        <div class="info-card info-card-blue">
+            <i class="fas fa-magic"></i>
+            <h3>AI-Powered</h3>
+            <p>Uses LangChain and Groq LLM to intelligently extract data</p>
         </div>
-        <div class="bg-green-50 p-6 rounded-lg">
-            <i class="fas fa-bolt text-green-600 text-3xl mb-3"></i>
-            <h3 class="font-semibold text-gray-900 mb-2">Fast & Reliable</h3>
-            <p class="text-gray-600 text-sm">Automatic retry logic and error handling built-in</p>
+        <div class="info-card info-card-green">
+            <i class="fas fa-bolt"></i>
+            <h3>Fast & Reliable</h3>
+            <p>Automatic retry logic and error handling built-in</p>
         </div>
-        <div class="bg-purple-50 p-6 rounded-lg">
-            <i class="fas fa-database text-purple-600 text-3xl mb-3"></i>
-            <h3 class="font-semibold text-gray-900 mb-2">Structured Data</h3>
-            <p class="text-gray-600 text-sm">Extracts data in clean, structured JSON format</p>
+        <div class="info-card info-card-purple">
+            <i class="fas fa-database"></i>
+            <h3>Structured Data</h3>
+            <p>Extracts data in clean, structured JSON format</p>
         </div>
     </div>
 </div>
+{% endblock %}
 
-<script>
-document.getElementById('scrapeForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const submitBtn = document.getElementById('submitBtn');
-    const loadingState = document.getElementById('loadingState');
-    const errorState = document.getElementById('errorState');
-    
-    // Get form data
-    const formData = {
-        url: document.getElementById('url').value,
-        user_instructions: document.getElementById('user_instructions').value,
-        scraper_type: document.getElementById('scraper_type').value
-    };
-    
-    // Show loading state
-    submitBtn.disabled = true;
-    loadingState.classList.remove('hidden');
-    errorState.classList.add('hidden');
-    
-    try {
-        const response = await fetch('/api/jobs/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            // Redirect to job detail page
-            window.location.href = `/job/${data.id}/`;
-        } else {
-            throw new Error(data.error || 'Failed to create scrape job');
-        }
-    } catch (error) {
-        // Show error
-        errorState.classList.remove('hidden');
-        document.getElementById('errorMessage').textContent = error.message;
-        submitBtn.disabled = false;
-        loadingState.classList.add('hidden');
-    }
-});
-</script>
+{% block extra_js %}
+<script src="{% static 'js/create_job.js' %}"></script>
 {% endblock %}

@@ -10,14 +10,15 @@ from langchain_core.prompts import PromptTemplate
 
 logger = logging.getLogger(__name__)
 class ScrapingAgent:
-    def __init__ (self, scarpped_data: dict):
-        self.scrapped_data = scarpped_data
+    def __init__ (self, scarped_data: dict):
+        self.scraped_data = scarped_data
         self.llm = self._setup_llm()
     
     def _setup_llm(self):
         try:
             llm = ChatGroq(
                 groq_api_key = settings.GROQ_API_KEY,
+                model = settings.GROQ_MODEL,
                 temperature = 0.1,
                 max_tokens=4046,
 
@@ -224,6 +225,7 @@ class AdvancedScrappingAgent:
         self.scraped_data = scraped_data
         self.llm = ChatGroq(
             groq_api_key=settings.GROQ_API_KEY,
+            model = settings.GROQ_MODEL,
             temperature=0.1,
             max_tokens=4046
         )

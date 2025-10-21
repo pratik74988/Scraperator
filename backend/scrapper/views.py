@@ -1,5 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -11,6 +12,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from rest_framework.authentication import SessionAuthentication
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        return  # disables CSRF check
 
 # Serializers
 class ScrapeJobSerializer(serializers.ModelSerializer):
@@ -53,6 +59,12 @@ class ScrapeLogSerializer(serializers.ModelSerializer):
 class ScrapeJobViewSet(viewsets.ModelViewSet):
     queryset = ScrapeJob.objects.all()
     serializer_class = ScrapeJobSerializer
+    queryset = ScrapeJob.objects.all()
+    serializer_class = ScrapeJobSerializer
+
+    authentication_classes = [CsrfExemptSessionAuthentication]
+    permission_classes = [AllowAny]
+
     
     def get_serializer_class(self):
         if self.action == 'create':

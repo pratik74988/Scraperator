@@ -5,3 +5,9 @@
                             <i class="fas fa-{{ job.status|status_icon }}"></i>
                             {{ job.status|title }}
                         </span>
+
+line 22
+        <span class="badge badge-{{ job.status }}">
+            <i class="fas fa-{{ job.status|status_icon }}"></i>
+            {{ job.status|title }}
+        </span>

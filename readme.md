@@ -139,15 +139,17 @@ curl -X POST http://localhost:8000/api/jobs/ \
 
 ## 📸 Screenshots
 ### Droping them Soon
-
+<div align="center">
+  <img src="frontend/templates/scraper/image_for_readme/1.png" alt="Image 1" width="300">
+  <img src="frontend/templates/scraper/image_for_readme/2.png"alt = "Image 2" width = "300">
+  <img src="frontend/templates/scraper/image_for_readme/3.png"alt="Image 3" width = "300"> 
+</div>
 <!-- ### Dashboard
 *Stats cards that actually look good*
 ![Dashboard](https://via.placeholder.com/800x400?text=Dashboard+Screenshot)
-
 ### AI Chat Interface
 *ChatGPT vibes but for web scraping*
 ![Chat](https://via.placeholder.com/800x400?text=Chat+Interface)
-
 ### Results Page
 *Your data, beautifully formatted*
 ![Results](https://via.placeholder.com/800x400?text=Results+Page) -->

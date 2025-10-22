@@ -1,0 +1,17 @@
+Django
+djangorestframework
+beautifulsoup4
+selenium
+requests
+lxml
+webdriver-manager
+python-dotenv
+celery
+
+langchain
+langchain-groq
+langchain-community
+groq
+
+pydantic
+tiktoken
